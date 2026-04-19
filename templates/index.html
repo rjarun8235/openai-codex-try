@@ -1,0 +1,497 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Pixel Art Canvas</title>
+    <style>
+      :root {
+        --bg: #f6f1e8;
+        --panel: #fffaf2;
+        --ink: #1e1f24;
+        --muted: #6c6f7a;
+        --accent: #d95d39;
+        --accent-dark: #9f3417;
+        --line: #d8cdbf;
+        --success-bg: #e7f6ea;
+        --success-text: #1d6b36;
+        --error-bg: #fdeaea;
+        --error-text: #a12626;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at top, rgba(217, 93, 57, 0.12), transparent 28%),
+          linear-gradient(180deg, #f9f4ec 0%, var(--bg) 100%);
+      }
+
+      main {
+        width: min(1100px, calc(100% - 2rem));
+        margin: 0 auto;
+        padding: 2rem 0 3rem;
+      }
+
+      .hero {
+        margin-bottom: 1.5rem;
+      }
+
+      h1 {
+        margin: 0 0 0.5rem;
+        font-size: clamp(2rem, 4vw, 3.5rem);
+        line-height: 0.95;
+      }
+
+      .hero p {
+        margin: 0;
+        max-width: 44rem;
+        color: var(--muted);
+        font-size: 1.05rem;
+      }
+
+      .hero-bar {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        align-items: end;
+      }
+
+      .nav-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 999px;
+        padding: 0.8rem 1.2rem;
+        background: #efe5d8;
+        color: var(--ink);
+        text-decoration: none;
+        font-weight: 700;
+      }
+
+      .nav-link:hover,
+      .nav-link:focus-visible {
+        background: #e7d8c4;
+      }
+
+      .workspace {
+        display: grid;
+        grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
+        gap: 1.25rem;
+        align-items: start;
+      }
+
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 24px;
+        box-shadow: 0 18px 50px rgba(30, 31, 36, 0.08);
+      }
+
+      .canvas-panel {
+        padding: 1rem;
+      }
+
+      .canvas-frame {
+        background:
+          linear-gradient(135deg, rgba(217, 93, 57, 0.16), rgba(255, 255, 255, 0.1)),
+          #fff;
+        border: 1px solid var(--line);
+        border-radius: 20px;
+        padding: 1rem;
+      }
+
+      #pixel-grid {
+        display: grid;
+        grid-template-columns: repeat(32, minmax(0, 1fr));
+        gap: 1px;
+        aspect-ratio: 1;
+        width: 100%;
+        max-width: 760px;
+        margin: 0 auto;
+        padding: 1px;
+        background: #cabdaa;
+        border-radius: 14px;
+        touch-action: none;
+        user-select: none;
+      }
+
+      .pixel {
+        width: 100%;
+        aspect-ratio: 1;
+        border: 0;
+        background: #ffffff;
+        padding: 0;
+        cursor: crosshair;
+      }
+
+      .sidebar {
+        padding: 1.25rem;
+      }
+
+      .sidebar h2 {
+        margin-top: 0;
+        margin-bottom: 0.75rem;
+        font-size: 1.2rem;
+      }
+
+      .sidebar section + section {
+        margin-top: 1.5rem;
+      }
+
+      .palette {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 0.75rem;
+      }
+
+      .swatch {
+        width: 100%;
+        aspect-ratio: 1;
+        border-radius: 16px;
+        border: 3px solid transparent;
+        cursor: pointer;
+        transition: transform 140ms ease, border-color 140ms ease;
+      }
+
+      .swatch:hover,
+      .swatch:focus-visible {
+        transform: translateY(-2px);
+      }
+
+      .swatch.active {
+        border-color: var(--ink);
+        box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.85) inset;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 0.4rem;
+        font-weight: 700;
+      }
+
+      input[type="text"] {
+        width: 100%;
+        padding: 0.8rem 0.95rem;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        font: inherit;
+        background: #fff;
+      }
+
+      .actions {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+      }
+
+      button {
+        border: 0;
+        border-radius: 999px;
+        padding: 0.8rem 1.2rem;
+        font: inherit;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      .primary {
+        background: var(--accent);
+        color: #fff;
+      }
+
+      .primary:hover,
+      .primary:focus-visible {
+        background: var(--accent-dark);
+      }
+
+      .secondary {
+        background: #efe5d8;
+        color: var(--ink);
+      }
+
+      .status {
+        min-height: 3.25rem;
+        padding: 0.9rem 1rem;
+        border-radius: 16px;
+        font-weight: 700;
+      }
+
+      .status:empty {
+        display: none;
+      }
+
+      .status.success {
+        background: var(--success-bg);
+        color: var(--success-text);
+      }
+
+      .status.error {
+        background: var(--error-bg);
+        color: var(--error-text);
+      }
+
+      .tip {
+        margin: 0;
+        color: var(--muted);
+        line-height: 1.5;
+      }
+
+      @media (max-width: 900px) {
+        .hero-bar {
+          flex-direction: column;
+          align-items: start;
+        }
+
+        .workspace {
+          grid-template-columns: 1fr;
+        }
+
+        .palette {
+          grid-template-columns: repeat(8, minmax(0, 1fr));
+        }
+      }
+
+      @media (max-width: 560px) {
+        main {
+          width: min(100% - 1rem, 100%);
+          padding-top: 1rem;
+        }
+
+        .canvas-panel,
+        .sidebar {
+          padding: 0.85rem;
+        }
+
+        .palette {
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section class="hero">
+        <div class="hero-bar">
+          <div>
+            <h1>Pixel Art Canvas</h1>
+            <p>Draw directly on a 32x32 grid, choose from a quick palette, and save your artwork to the gallery database with a name.</p>
+          </div>
+          <a class="nav-link" href="{{ url_for('canvas.gallery') }}">Open gallery</a>
+        </div>
+      </section>
+
+      <section class="workspace">
+        <div class="panel canvas-panel">
+          <div class="canvas-frame">
+            <div id="pixel-grid" aria-label="32 by 32 drawing canvas" role="grid"></div>
+          </div>
+        </div>
+
+        <aside class="panel sidebar">
+          <section>
+            <h2>Palette</h2>
+            <div class="palette" id="palette"></div>
+          </section>
+
+          <section>
+            <label for="canvas-name">Canvas name</label>
+            <input id="canvas-name" name="canvas-name" type="text" maxlength="255" placeholder="Sunset Sprite">
+          </section>
+
+          <section class="actions">
+            <button class="primary" id="save-button" type="button">Save canvas</button>
+            <button class="secondary" id="clear-button" type="button">Clear grid</button>
+          </section>
+
+          <section>
+            <div class="status" id="status" aria-live="polite"></div>
+          </section>
+
+          <section>
+            <p class="tip">Click or drag to paint. Choose a color, name your piece, and save when it feels right.</p>
+          </section>
+        </aside>
+      </section>
+    </main>
+
+    <script>
+      const gridSize = 32;
+      const defaultColor = "#FFFFFF";
+      const paletteColors = [
+        "#1E1F24",
+        "#D95D39",
+        "#F2C14E",
+        "#7FB069",
+        "#4D9DE0",
+        "#7768AE",
+        "#E15554",
+        "#3BB273",
+        "#FF9F1C",
+        "#2EC4B6",
+        "#F7F7FF",
+        "#8D99AE",
+      ];
+
+      const pixelGrid = document.getElementById("pixel-grid");
+      const palette = document.getElementById("palette");
+      const nameInput = document.getElementById("canvas-name");
+      const saveButton = document.getElementById("save-button");
+      const clearButton = document.getElementById("clear-button");
+      const statusBox = document.getElementById("status");
+
+      let currentColor = paletteColors[0];
+      let isDrawing = false;
+      let pixels = Array.from({ length: gridSize }, () =>
+        Array.from({ length: gridSize }, () => defaultColor)
+      );
+
+      function setStatus(message, type) {
+        statusBox.textContent = message;
+        statusBox.className = "status";
+
+        if (type) {
+          statusBox.classList.add(type);
+        }
+      }
+
+      function paintPixel(cell) {
+        const row = Number(cell.dataset.row);
+        const col = Number(cell.dataset.col);
+        pixels[row][col] = currentColor;
+        cell.style.backgroundColor = currentColor;
+      }
+
+      function buildGrid() {
+        const fragment = document.createDocumentFragment();
+
+        for (let row = 0; row < gridSize; row += 1) {
+          for (let col = 0; col < gridSize; col += 1) {
+            const cell = document.createElement("button");
+            cell.type = "button";
+            cell.className = "pixel";
+            cell.dataset.row = row;
+            cell.dataset.col = col;
+            cell.style.backgroundColor = defaultColor;
+            cell.setAttribute("aria-label", `Pixel ${row + 1}, ${col + 1}`);
+
+            cell.addEventListener("pointerdown", () => {
+              isDrawing = true;
+              paintPixel(cell);
+            });
+
+            cell.addEventListener("pointerenter", () => {
+              if (isDrawing) {
+                paintPixel(cell);
+              }
+            });
+
+            fragment.appendChild(cell);
+          }
+        }
+
+        pixelGrid.appendChild(fragment);
+      }
+
+      function buildPalette() {
+        const fragment = document.createDocumentFragment();
+
+        paletteColors.forEach((color, index) => {
+          const swatch = document.createElement("button");
+          swatch.type = "button";
+          swatch.className = "swatch";
+          swatch.style.backgroundColor = color;
+          swatch.setAttribute("aria-label", `Select color ${color}`);
+
+          if (index === 0) {
+            swatch.classList.add("active");
+          }
+
+          swatch.addEventListener("click", () => {
+            currentColor = color;
+            document.querySelectorAll(".swatch").forEach((item) => {
+              item.classList.remove("active");
+            });
+            swatch.classList.add("active");
+          });
+
+          fragment.appendChild(swatch);
+        });
+
+        palette.appendChild(fragment);
+      }
+
+      function clearGrid() {
+        pixels = Array.from({ length: gridSize }, () =>
+          Array.from({ length: gridSize }, () => defaultColor)
+        );
+
+        document.querySelectorAll(".pixel").forEach((cell) => {
+          cell.style.backgroundColor = defaultColor;
+        });
+
+        setStatus("Grid cleared. Start a new canvas whenever you're ready.", "success");
+      }
+
+      async function saveCanvas() {
+        const name = nameInput.value.trim();
+
+        if (!name) {
+          setStatus("Please enter a canvas name before saving.", "error");
+          nameInput.focus();
+          return;
+        }
+
+        saveButton.disabled = true;
+        setStatus("Saving canvas...", null);
+
+        try {
+          const response = await fetch("/canvases", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              name,
+              pixel_data: pixels,
+            }),
+          });
+
+          const result = await response.json();
+
+          if (!response.ok) {
+            throw new Error(result.message || "Unable to save canvas.");
+          }
+
+          setStatus(result.message, "success");
+        } catch (error) {
+          setStatus(error.message || "Unable to save canvas.", "error");
+        } finally {
+          saveButton.disabled = false;
+        }
+      }
+
+      pixelGrid.addEventListener("pointerup", () => {
+        isDrawing = false;
+      });
+
+      pixelGrid.addEventListener("pointerleave", () => {
+        isDrawing = false;
+      });
+
+      document.addEventListener("pointerup", () => {
+        isDrawing = false;
+      });
+
+      saveButton.addEventListener("click", saveCanvas);
+      clearButton.addEventListener("click", clearGrid);
+
+      buildGrid();
+      buildPalette();
+    </script>
+  </body>
+</html>
