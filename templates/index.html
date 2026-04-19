@@ -17,6 +17,36 @@
         --success-text: #1d6b36;
         --error-bg: #fdeaea;
         --error-text: #a12626;
+        --canvas-bg: #fff;
+        --grid-bg: #cabdaa;
+        --control-bg: #efe5d8;
+        --control-hover: #e7d8c4;
+        --input-bg: #fff;
+        --shadow: 0 18px 50px rgba(30, 31, 36, 0.08);
+        --hero-glow: rgba(217, 93, 57, 0.12);
+        --page-top: #f9f4ec;
+      }
+
+      body[data-theme="dark"] {
+        --bg: #16181d;
+        --panel: #1e222a;
+        --ink: #f3efe8;
+        --muted: #b5bac6;
+        --accent: #f08a5d;
+        --accent-dark: #ffb38f;
+        --line: #353b47;
+        --success-bg: #173422;
+        --success-text: #92e0a9;
+        --error-bg: #402124;
+        --error-text: #ffb3b3;
+        --canvas-bg: #111317;
+        --grid-bg: #4f5664;
+        --control-bg: #2a2f39;
+        --control-hover: #363d49;
+        --input-bg: #181c23;
+        --shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+        --hero-glow: rgba(240, 138, 93, 0.2);
+        --page-top: #1c2027;
       }
 
       * {
@@ -28,8 +58,8 @@
         font-family: "Trebuchet MS", "Segoe UI", sans-serif;
         color: var(--ink);
         background:
-          radial-gradient(circle at top, rgba(217, 93, 57, 0.12), transparent 28%),
-          linear-gradient(180deg, #f9f4ec 0%, var(--bg) 100%);
+          radial-gradient(circle at top, var(--hero-glow), transparent 28%),
+          linear-gradient(180deg, var(--page-top) 0%, var(--bg) 100%);
       }
 
       main {
@@ -68,15 +98,22 @@
         justify-content: center;
         border-radius: 999px;
         padding: 0.8rem 1.2rem;
-        background: #efe5d8;
+        background: var(--control-bg);
         color: var(--ink);
         text-decoration: none;
         font-weight: 700;
       }
 
+      .toolbar {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+        justify-content: end;
+      }
+
       .nav-link:hover,
       .nav-link:focus-visible {
-        background: #e7d8c4;
+        background: var(--control-hover);
       }
 
       .workspace {
@@ -90,7 +127,7 @@
         background: var(--panel);
         border: 1px solid var(--line);
         border-radius: 24px;
-        box-shadow: 0 18px 50px rgba(30, 31, 36, 0.08);
+        box-shadow: var(--shadow);
       }
 
       .canvas-panel {
@@ -100,7 +137,7 @@
       .canvas-frame {
         background:
           linear-gradient(135deg, rgba(217, 93, 57, 0.16), rgba(255, 255, 255, 0.1)),
-          #fff;
+          var(--canvas-bg);
         border: 1px solid var(--line);
         border-radius: 20px;
         padding: 1rem;
@@ -115,7 +152,7 @@
         max-width: 760px;
         margin: 0 auto;
         padding: 1px;
-        background: #cabdaa;
+        background: var(--grid-bg);
         border-radius: 14px;
         touch-action: none;
         user-select: none;
@@ -181,7 +218,8 @@
         border: 1px solid var(--line);
         border-radius: 14px;
         font: inherit;
-        background: #fff;
+        color: var(--ink);
+        background: var(--input-bg);
       }
 
       .actions {
@@ -210,8 +248,13 @@
       }
 
       .secondary {
-        background: #efe5d8;
+        background: var(--control-bg);
         color: var(--ink);
+      }
+
+      .secondary:hover,
+      .secondary:focus-visible {
+        background: var(--control-hover);
       }
 
       .status {
@@ -245,6 +288,10 @@
         .hero-bar {
           flex-direction: column;
           align-items: start;
+        }
+
+        .toolbar {
+          justify-content: start;
         }
 
         .workspace {
@@ -281,7 +328,10 @@
             <h1>Pixel Art Canvas</h1>
             <p>Draw directly on a 32x32 grid, choose from a quick palette, and save your artwork to the gallery database with a name.</p>
           </div>
-          <a class="nav-link" href="{{ url_for('canvas.gallery') }}">Open gallery</a>
+          <div class="toolbar">
+            <button class="secondary" id="theme-toggle" type="button" aria-pressed="false">Dark mode</button>
+            <a class="nav-link" href="{{ url_for('canvas.gallery') }}">Open gallery</a>
+          </div>
         </div>
       </section>
 
@@ -343,12 +393,26 @@
       const saveButton = document.getElementById("save-button");
       const clearButton = document.getElementById("clear-button");
       const statusBox = document.getElementById("status");
+      const themeToggle = document.getElementById("theme-toggle");
+      const themeStorageKey = "pixel-art-theme";
 
       let currentColor = paletteColors[0];
       let isDrawing = false;
       let pixels = Array.from({ length: gridSize }, () =>
         Array.from({ length: gridSize }, () => defaultColor)
       );
+
+      function applyTheme(theme) {
+        const nextTheme = theme === "dark" ? "dark" : "light";
+        document.body.dataset.theme = nextTheme;
+        themeToggle.textContent = nextTheme === "dark" ? "Light mode" : "Dark mode";
+        themeToggle.setAttribute("aria-pressed", String(nextTheme === "dark"));
+      }
+
+      function loadTheme() {
+        const storedTheme = window.localStorage.getItem(themeStorageKey);
+        applyTheme(storedTheme);
+      }
 
       function setStatus(message, type) {
         statusBox.textContent = message;
@@ -487,9 +551,16 @@
         isDrawing = false;
       });
 
+      themeToggle.addEventListener("click", () => {
+        const nextTheme = document.body.dataset.theme === "dark" ? "light" : "dark";
+        window.localStorage.setItem(themeStorageKey, nextTheme);
+        applyTheme(nextTheme);
+      });
+
       saveButton.addEventListener("click", saveCanvas);
       clearButton.addEventListener("click", clearGrid);
 
+      loadTheme();
       buildGrid();
       buildPalette();
     </script>
