@@ -1,0 +1,53 @@
+# Block bare rm regardless of flags (Unix style).
+prefix_rule(
+    pattern = ["rm"],
+    decision = "forbidden",
+    justification = "rm blocked: use git rm or delete via IDE",
+    match = [
+        "rm file.txt",
+        "rm -rf /tmp/foo",
+        "rm -rf pixel_art.db",
+    ],
+)
+
+# Block PowerShell's Remove-Item cmdlet.
+prefix_rule(
+    pattern = ["Remove-Item"],
+    decision = "forbidden",
+    justification = "Remove-Item blocked: use git rm or delete via IDE",
+    match = [
+        "Remove-Item pixel_art.db",
+        "Remove-Item -LiteralPath .\\pixel_art.db -Force",
+    ],
+)
+
+# Block del (cmd.exe style).
+prefix_rule(
+    pattern = ["del"],
+    decision = "forbidden",
+    justification = "del blocked: use git rm or delete via IDE",
+    match = ["del pixel_art.db"],
+)
+
+# Block force-push variants.
+prefix_rule(
+    pattern = ["git", "push", "--force"],
+    decision = "forbidden",
+    justification = "force push blocked by repo policy",
+    match = ["git push --force origin main"],
+)
+
+prefix_rule(
+    pattern = ["git", "push", "-f"],
+    decision = "forbidden",
+    justification = "force push (-f) blocked by repo policy",
+    match = ["git push -f origin main"],
+)
+
+# Block destructive git reset.
+prefix_rule(
+    pattern = ["git", "reset", "--hard"],
+    decision = "forbidden",
+    justification = "hard reset blocked — commit WIP first",
+    match = ["git reset --hard HEAD", "git reset --hard origin/main"],
+)

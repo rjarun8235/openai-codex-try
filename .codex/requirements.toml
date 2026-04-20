@@ -1,0 +1,4 @@
+[disallowed]
+approval_policy = ["never"]
+sandbox_mode = ["danger-full-access"]
+allowed_web_search_modes = ["cached", "disabled"]   # live forbidden

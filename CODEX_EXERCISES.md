@@ -275,15 +275,23 @@ Then ask Codex: *"Create a file at /tmp/hello-codex.txt with the current date."*
 
 **Task:** write a policy that blocks `rm -rf` but allows all other commands.
 
-1. Create `.codex/rules/safety.rules` (Starlark):
+1. Create `.codex/rules/safety.rules` (Starlark — use `prefix_rule()`, NOT `def rule(cmd)`):
    ```python
-   def rule(cmd):
-       if cmd.program == "rm" and "-rf" in cmd.args:
-           return deny("destructive rm blocked by policy")
-       if cmd.program == "git" and cmd.args[:2] == ["push", "--force"]:
-           return deny("force push blocked")
-       return allow()
+   prefix_rule(
+       pattern = ["rm", "-rf"],
+       decision = "forbidden",
+       justification = "destructive rm -rf blocked by repo policy",
+       match = ["rm -rf /tmp/foo", "rm -rf pixel_art.db"],
+   )
+
+   prefix_rule(
+       pattern = ["git", "push", "--force"],
+       decision = "forbidden",
+       justification = "force push blocked by repo policy",
+       match = ["git push --force origin main"],
+   )
    ```
+   The top-level function is `prefix_rule()`. `decision` is one of `"allow"`, `"prompt"`, `"forbidden"`. The `match` list is self-test cases.
 2. Test without running Codex:
    ```bash
    codex execpolicy check --rules .codex/rules/safety.rules --pretty -- rm -rf /tmp/foo

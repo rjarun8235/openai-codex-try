@@ -14,3 +14,5 @@ network_access = false
 # [agents] and [agents.<role>] are intentionally NOT here —
 # this Codex version rejects them in project-scoped config.
 # Put subagent roles in ~/.codex/config.toml (global) instead.
+
+exec_policy_files = [".codex/rules/safety.rules"]
