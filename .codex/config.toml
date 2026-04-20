@@ -11,17 +11,6 @@ web_search = "cached"
 [sandbox_workspace_write]
 network_access = false
 
-[agents]
-max_threads = 3
-
-[[agents.roles]]
-name = "backend"
-description = "Writes Flask routes, SQLAlchemy models, service functions."
-
-[[agents.roles]]
-name = "frontend"
-description = "Writes Jinja templates and client-side JS."
-
-[[agents.roles]]
-name = "tester"
-description = "Writes pytest tests. Runs only after backend and frontend produce files."
+# [agents] and [agents.<role>] are intentionally NOT here —
+# this Codex version rejects them in project-scoped config.
+# Put subagent roles in ~/.codex/config.toml (global) instead.

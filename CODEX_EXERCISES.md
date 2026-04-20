@@ -239,23 +239,23 @@ Then ask Codex: *"Create a file at /tmp/hello-codex.txt with the current date."*
 
 **Task:** add user accounts to the pixel-art app using three parallel subagents.
 
-1. In `.codex/config.toml`, add:
+1. Create three role files in `.codex/agents/` — `backend.toml`, `frontend.toml`, `tester.toml` — each with `name`, `description`, `sandbox_mode`, and a `developer_instructions` block describing the role's scope.
+2. In **`~/.codex/config.toml` (global, not project)** add:
    ```toml
    [agents]
    max_threads = 3
+   max_depth = 1
 
-   [[agents.roles]]
-   name = "backend"
-   description = "Writes Flask routes, SQLAlchemy models, service functions."
+   [agents.backend]
+   config_file = "C:/workspace/genai/openai-codex-try/.codex/agents/backend.toml"
 
-   [[agents.roles]]
-   name = "frontend"
-   description = "Writes Jinja templates and client-side JS."
+   [agents.frontend]
+   config_file = "C:/workspace/genai/openai-codex-try/.codex/agents/frontend.toml"
 
-   [[agents.roles]]
-   name = "tester"
-   description = "Writes pytest tests. Runs only after backend and frontend produce files."
+   [agents.tester]
+   config_file = "C:/workspace/genai/openai-codex-try/.codex/agents/tester.toml"
    ```
+   **Important:** current Codex builds reject `[agents]` in project-scoped `.codex/config.toml`. Put it in the global config, with absolute paths to the role files.
 2. Open `codex`, choose **Worktree**.
 3. Prompt the top-level agent:
    > Plan user accounts (signup/login/logout). Hand off the model + route work to `backend`, the template work to `frontend`. After both produce files, hand off to `tester` to write tests and run them. Run backend and frontend **in parallel**.
