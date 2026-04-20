@@ -85,22 +85,38 @@
         font-size: 1.05rem;
       }
 
-      .hero-bar {
+      .hero-bar,
+      .nav-group,
+      .account-pill,
+      .auth-links {
         display: flex;
+        gap: 0.75rem;
+      }
+
+      .hero-bar {
         justify-content: space-between;
-        gap: 1rem;
         align-items: end;
       }
 
-      .nav-link {
+      .nav-group,
+      .account-pill,
+      .auth-links {
+        flex-wrap: wrap;
+        align-items: center;
+      }
+
+      .nav-link,
+      .ghost-button {
         display: inline-flex;
         align-items: center;
         justify-content: center;
+        border: 0;
         border-radius: 999px;
         padding: 0.8rem 1.2rem;
         background: var(--control-bg);
         color: var(--ink);
         text-decoration: none;
+        font: inherit;
         font-weight: 700;
       }
 
@@ -112,8 +128,36 @@
       }
 
       .nav-link:hover,
-      .nav-link:focus-visible {
+      .nav-link:focus-visible,
+      .ghost-button:hover,
+      .ghost-button:focus-visible {
         background: var(--control-hover);
+      }
+
+      .nav-link.primary-link {
+        background: var(--accent);
+        color: #fff;
+      }
+
+      .nav-link.primary-link:hover,
+      .nav-link.primary-link:focus-visible {
+        background: var(--accent-dark);
+      }
+
+      .account-pill {
+        padding: 0.45rem 0.5rem 0.45rem 1rem;
+        border-radius: 999px;
+        background: #efe5d8;
+        font-weight: 700;
+      }
+
+      .account-pill span {
+        color: var(--muted);
+        font-weight: 600;
+      }
+
+      .inline-form {
+        margin: 0;
       }
 
       .workspace {
@@ -123,11 +167,29 @@
         align-items: start;
       }
 
-      .panel {
+      .panel,
+      .message-banner,
+      .auth-card {
         background: var(--panel);
         border: 1px solid var(--line);
         border-radius: 24px;
         box-shadow: var(--shadow);
+      }
+
+      .message-banner {
+        margin-bottom: 1rem;
+        padding: 0.95rem 1.1rem;
+        font-weight: 700;
+      }
+
+      .message-banner.success {
+        background: var(--success-bg);
+        color: var(--success-text);
+      }
+
+      .message-banner.error {
+        background: var(--error-bg);
+        color: var(--error-text);
       }
 
       .canvas-panel {
@@ -171,14 +233,55 @@
         padding: 1.25rem;
       }
 
-      .sidebar h2 {
+      .sidebar h2,
+      .sidebar h3 {
         margin-top: 0;
         margin-bottom: 0.75rem;
+      }
+
+      .sidebar h2 {
         font-size: 1.2rem;
+      }
+
+      .sidebar h3 {
+        font-size: 1rem;
       }
 
       .sidebar section + section {
         margin-top: 1.5rem;
+      }
+
+      .account-panel {
+        padding: 1rem;
+        border-radius: 20px;
+        background: #f9f0e4;
+        border: 1px solid var(--line);
+      }
+
+      .account-panel p {
+        margin: 0.35rem 0 0;
+        color: var(--muted);
+        line-height: 1.5;
+      }
+
+      .auth-stack {
+        display: grid;
+        gap: 1rem;
+      }
+
+      .auth-card {
+        padding: 1rem;
+      }
+
+      .auth-card p {
+        margin: 0 0 0.9rem;
+        color: var(--muted);
+        line-height: 1.5;
+      }
+
+      .auth-form {
+        display: grid;
+        gap: 0.85rem;
       }
 
       .palette {
@@ -212,7 +315,9 @@
         font-weight: 700;
       }
 
-      input[type="text"] {
+      input[type="text"],
+      input[type="email"],
+      input[type="password"] {
         width: 100%;
         padding: 0.8rem 0.95rem;
         border: 1px solid var(--line);
@@ -278,10 +383,15 @@
         color: var(--error-text);
       }
 
-      .tip {
+      .tip,
+      .helper-text {
         margin: 0;
         color: var(--muted);
         line-height: 1.5;
+      }
+
+      .helper-text {
+        font-size: 0.92rem;
       }
 
       @media (max-width: 900px) {
@@ -321,6 +431,9 @@
     </style>
   </head>
   <body>
+    {% set message_text = request.args.get("message") %}
+    {% set error_text = request.args.get("error") %}
+
     <main>
       <section class="hero">
         <div class="hero-bar">
@@ -330,10 +443,33 @@
           </div>
           <div class="toolbar">
             <button class="secondary" id="theme-toggle" type="button" aria-pressed="false">Dark mode</button>
-            <a class="nav-link" href="{{ url_for('canvas.gallery') }}">Open gallery</a>
+            <div class="nav-group">
+              <a class="nav-link" href="{{ url_for('canvas.gallery') }}">Open gallery</a>
+              {% if is_authenticated %}
+                <div class="account-pill" aria-label="Signed in account">
+                  <strong>{{ current_user.username }}</strong>
+                  <span>signed in</span>
+                </div>
+                <form class="inline-form" action="/auth/logout" method="post" data-auth-form data-redirect="{{ url_for('canvas.index') }}">
+                  <button class="ghost-button" type="submit">Log out</button>
+                </form>
+              {% else %}
+                <div class="auth-links">
+                  <a class="nav-link" href="#login-panel">Log in</a>
+                  <a class="nav-link primary-link" href="#signup-panel">Create account</a>
+                </div>
+              {% endif %}
+            </div>
+          </div>
           </div>
         </div>
       </section>
+
+      {% if message_text %}
+        <section class="message-banner success" aria-live="polite">{{ message_text }}</section>
+      {% elif error_text %}
+        <section class="message-banner error" aria-live="polite">{{ error_text }}</section>
+      {% endif %}
 
       <section class="workspace">
         <div class="panel canvas-panel">
@@ -343,6 +479,60 @@
         </div>
 
         <aside class="panel sidebar">
+          <section>
+            <div class="account-panel">
+              {% if is_authenticated %}
+                <h2>Your account</h2>
+                <p><strong>{{ current_user.username }}</strong></p>
+                <p>{{ current_user.email }}</p>
+                <p>Your new canvases will save while this session stays active.</p>
+              {% else %}
+                <h2>Save with an account</h2>
+                <p>Create an account or log in before saving if you want your session tied to you.</p>
+              {% endif %}
+            </div>
+          </section>
+
+          {% if not is_authenticated %}
+            <section class="auth-stack" aria-label="Account access">
+              <article class="auth-card" id="login-panel">
+                <h3>Log in</h3>
+                <p>Use your username or email plus password.</p>
+                <form class="auth-form" action="/auth/login" method="post" data-auth-form data-redirect="{{ url_for('canvas.index') }}">
+                  <div>
+                    <label for="login-identifier">Username or email</label>
+                    <input id="login-identifier" name="identifier" type="text" autocomplete="username" required>
+                  </div>
+                  <div>
+                    <label for="login-password">Password</label>
+                    <input id="login-password" name="password" type="password" autocomplete="current-password" required>
+                  </div>
+                  <button class="primary" type="submit">Log in</button>
+                </form>
+              </article>
+
+              <article class="auth-card" id="signup-panel">
+                <h3>Create account</h3>
+                <p>Pick a username, add your email, and start saving canvases.</p>
+                <form class="auth-form" action="/auth/signup" method="post" data-auth-form data-redirect="{{ url_for('canvas.index') }}">
+                  <div>
+                    <label for="signup-username">Username</label>
+                    <input id="signup-username" name="username" type="text" autocomplete="username" required>
+                  </div>
+                  <div>
+                    <label for="signup-email">Email</label>
+                    <input id="signup-email" name="email" type="email" autocomplete="email" required>
+                  </div>
+                  <div>
+                    <label for="signup-password">Password</label>
+                    <input id="signup-password" name="password" type="password" autocomplete="new-password" required>
+                  </div>
+                  <button class="primary" type="submit">Create account</button>
+                </form>
+              </article>
+            </section>
+          {% endif %}
+
           <section>
             <h2>Palette</h2>
             <div class="palette" id="palette"></div>
@@ -361,6 +551,12 @@
           <section>
             <div class="status" id="status" aria-live="polite"></div>
           </section>
+
+          {% if not is_authenticated %}
+            <section>
+              <p class="helper-text">If save requests are protected in your environment, log in above first and then try again.</p>
+            </section>
+          {% endif %}
 
           <section>
             <p class="tip">Click or drag to paint. Choose a color, name your piece, and save when it feels right.</p>
@@ -420,6 +616,50 @@
 
         if (type) {
           statusBox.classList.add(type);
+        }
+      }
+
+      function updateLocationMessage(targetUrl, message, isError) {
+        const url = new URL(targetUrl, window.location.origin);
+
+        if (message) {
+          url.searchParams.set(isError ? "error" : "message", message);
+          url.searchParams.delete(isError ? "message" : "error");
+        }
+
+        window.location.assign(url.toString());
+      }
+
+      async function submitAuthForm(form) {
+        const submitButton = form.querySelector('button[type="submit"]');
+        const formData = new FormData(form);
+        const redirectTarget = form.dataset.redirect || window.location.pathname;
+
+        if (submitButton) {
+          submitButton.disabled = true;
+        }
+
+        try {
+          const response = await fetch(form.action, {
+            method: form.method || "POST",
+            body: formData,
+            headers: {
+              "Accept": "application/json",
+            },
+          });
+          const result = await response.json();
+
+          if (!response.ok) {
+            throw new Error(result.message || "Request failed.");
+          }
+
+          updateLocationMessage(redirectTarget, result.message || "Success.", false);
+        } catch (error) {
+          updateLocationMessage(redirectTarget, error.message || "Request failed.", true);
+        } finally {
+          if (submitButton) {
+            submitButton.disabled = false;
+          }
         }
       }
 
@@ -555,6 +795,13 @@
         const nextTheme = document.body.dataset.theme === "dark" ? "light" : "dark";
         window.localStorage.setItem(themeStorageKey, nextTheme);
         applyTheme(nextTheme);
+      });
+
+      document.querySelectorAll("[data-auth-form]").forEach((form) => {
+        form.addEventListener("submit", (event) => {
+          event.preventDefault();
+          submitAuthForm(form);
+        });
       });
 
       saveButton.addEventListener("click", saveCanvas);

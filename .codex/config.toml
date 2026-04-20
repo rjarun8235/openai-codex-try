@@ -1,18 +1,10 @@
 #:schema https://developers.openai.com/codex/config-schema.json
 
-# Project-scoped overrides for openai-codex-try.
-# Model is intentionally not set — inherits from ~/.codex/config.toml
-# (which your ChatGPT account maps to GPT-5).
-
 approval_policy = "on-request"
 sandbox_mode = "workspace-write"
 web_search = "cached"
 
 [sandbox_workspace_write]
 network_access = false
-
-# [agents] and [agents.<role>] are intentionally NOT here —
-# this Codex version rejects them in project-scoped config.
-# Put subagent roles in ~/.codex/config.toml (global) instead.
 
 exec_policy_files = [".codex/rules/safety.rules"]
