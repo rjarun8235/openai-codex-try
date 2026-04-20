@@ -2,7 +2,11 @@
   "permissions": {
     "allow": [
       "Read(//c/Users/rjaru/.claude/projects/c--workspace-genai-openai-codex-try/memory//**)",
-      "Read(//c/Users/rjaru/.codex/**)"
+      "Read(//c/Users/rjaru/.codex/**)",
+      "Bash(codex exec *)"
+    ],
+    "additionalDirectories": [
+      "C:\\Users\\rjaru\\.codex"
     ]
   }
 }
