@@ -67,6 +67,10 @@ def _sanitize_filename(name):
     return normalized
 
 
+def _hex_to_rgb(color):
+    return tuple(int(color[index : index + 2], 16) for index in (1, 3, 5))
+
+
 def export_canvas_png(canvas, pixel_size=16):
     validated_rows = _validate_pixel_data(canvas.pixel_data)
     image_size = GRID_SIZE * pixel_size
@@ -76,10 +80,11 @@ def export_canvas_png(canvas, pixel_size=16):
         for col_index, color in enumerate(row):
             x0 = col_index * pixel_size
             y0 = row_index * pixel_size
+            rgb_color = _hex_to_rgb(color)
 
             for y in range(y0, y0 + pixel_size):
                 for x in range(x0, x0 + pixel_size):
-                    image.putpixel((x, y), color)
+                    image.putpixel((x, y), rgb_color)
 
     image_io = io.BytesIO()
     image.save(image_io, format="PNG")

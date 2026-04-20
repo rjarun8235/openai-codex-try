@@ -1,0 +1,27 @@
+#:schema https://developers.openai.com/codex/config-schema.json
+
+# Project-scoped overrides for openai-codex-try.
+# Model is intentionally not set — inherits from ~/.codex/config.toml
+# (which your ChatGPT account maps to GPT-5).
+
+approval_policy = "on-request"
+sandbox_mode = "workspace-write"
+web_search = "cached"
+
+[sandbox_workspace_write]
+network_access = false
+
+[agents]
+max_threads = 3
+
+[[agents.roles]]
+name = "backend"
+description = "Writes Flask routes, SQLAlchemy models, service functions."
+
+[[agents.roles]]
+name = "frontend"
+description = "Writes Jinja templates and client-side JS."
+
+[[agents.roles]]
+name = "tester"
+description = "Writes pytest tests. Runs only after backend and frontend produce files."
