@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Pixel Art Canvas{% endblock %}</title>
+    <style>
+      :root {
+        --bg: #f6f1e8;
+        --panel: #fffaf2;
+        --ink: #1e1f24;
+        --muted: #6c6f7a;
+        --accent: #d95d39;
+        --accent-dark: #9f3417;
+        --line: #d8cdbf;
+        --success-bg: #e7f6ea;
+        --success-text: #1d6b36;
+        --error-bg: #fdeaea;
+        --error-text: #a12626;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+        color: var(--ink);
+        background: var(--page-background, linear-gradient(180deg, #f9f4ec 0%, var(--bg) 100%));
+      }
+
+      a {
+        color: inherit;
+      }
+
+      main {
+        width: min(1180px, calc(100% - 2rem));
+        margin: 0 auto;
+        padding: 1.5rem 0 3rem;
+      }
+
+      .site-nav {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        align-items: center;
+        margin-bottom: 1.5rem;
+      }
+
+      .brand {
+        font-size: 1.3rem;
+        font-weight: 700;
+        text-decoration: none;
+      }
+
+      .nav-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        align-items: center;
+      }
+
+      .nav-pill,
+      .nav-form button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 0;
+        border-radius: 999px;
+        padding: 0.8rem 1.2rem;
+        background: #efe5d8;
+        color: var(--ink);
+        text-decoration: none;
+        font: inherit;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      .nav-pill.primary {
+        background: var(--accent);
+        color: #fff;
+      }
+
+      .nav-pill:hover,
+      .nav-pill:focus-visible,
+      .nav-form button:hover,
+      .nav-form button:focus-visible {
+        background: #e7d8c4;
+      }
+
+      .nav-pill.primary:hover,
+      .nav-pill.primary:focus-visible {
+        background: var(--accent-dark);
+      }
+
+      .nav-form {
+        margin: 0;
+      }
+
+      .user-chip {
+        padding: 0.65rem 0.95rem;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.65);
+        color: var(--muted);
+        font-weight: 700;
+      }
+
+      .flash-stack {
+        display: grid;
+        gap: 0.75rem;
+        margin-bottom: 1.25rem;
+      }
+
+      .flash {
+        padding: 0.9rem 1rem;
+        border-radius: 16px;
+        border: 1px solid var(--line);
+        font-weight: 700;
+      }
+
+      .flash.success {
+        background: var(--success-bg);
+        color: var(--success-text);
+      }
+
+      .flash.error {
+        background: var(--error-bg);
+        color: var(--error-text);
+      }
+
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 24px;
+        box-shadow: 0 18px 50px rgba(30, 31, 36, 0.08);
+      }
+
+      @media (max-width: 760px) {
+        main {
+          width: min(100% - 1rem, 100%);
+          padding-top: 1rem;
+        }
+
+        .site-nav {
+          align-items: start;
+          flex-direction: column;
+        }
+      }
+    </style>
+    {% block extra_head %}{% endblock %}
+  </head>
+  <body>
+    <main>
+      <nav class="site-nav" aria-label="Main">
+        <a class="brand" href="{{ url_for('canvas.index') }}">Pixel Art Canvas</a>
+        <div class="nav-actions">
+          <a class="nav-pill" href="{{ url_for('canvas.index') }}">Draw</a>
+          <a class="nav-pill" href="{{ url_for('canvas.gallery') }}">Gallery</a>
+          {% if is_authenticated %}
+            <span class="user-chip">Signed in as {{ current_user.username }}</span>
+            <form class="nav-form" action="{{ url_for('auth.logout') }}" method="post">
+              <button type="submit">Log out</button>
+            </form>
+          {% else %}
+            <a class="nav-pill" href="{{ url_for('auth.login_page') }}">Log in</a>
+            <a class="nav-pill primary" href="{{ url_for('auth.signup_page') }}">Create account</a>
+          {% endif %}
+        </div>
+      </nav>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <section class="flash-stack" aria-label="Messages">
+            {% for category, message in messages %}
+              <div class="flash {{ category }}">{{ message }}</div>
+            {% endfor %}
+          </section>
+        {% endif %}
+      {% endwith %}
+
+      {% block content %}{% endblock %}
+    </main>
+    {% block scripts %}{% endblock %}
+  </body>
+</html>

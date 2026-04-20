@@ -1,207 +1,181 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Gallery | Pixel Art Canvas</title>
-    <style>
-      :root {
-        --bg: #f6f1e8;
-        --panel: #fffaf2;
-        --ink: #1e1f24;
-        --muted: #6c6f7a;
-        --accent: #d95d39;
-        --accent-dark: #9f3417;
-        --line: #d8cdbf;
-      }
+{% extends "base.html" %}
 
-      * {
-        box-sizing: border-box;
-      }
+{% block title %}Gallery | Pixel Art Canvas{% endblock %}
 
-      body {
-        margin: 0;
-        font-family: "Trebuchet MS", "Segoe UI", sans-serif;
-        color: var(--ink);
-        background:
-          radial-gradient(circle at top left, rgba(77, 157, 224, 0.12), transparent 30%),
-          linear-gradient(180deg, #f9f4ec 0%, var(--bg) 100%);
-      }
+{% block extra_head %}
+  <style>
+    body {
+      --page-background:
+        radial-gradient(circle at top left, rgba(77, 157, 224, 0.12), transparent 30%),
+        linear-gradient(180deg, #f9f4ec 0%, var(--bg) 100%);
+    }
 
-      main {
-        width: min(1180px, calc(100% - 2rem));
-        margin: 0 auto;
-        padding: 2rem 0 3rem;
-      }
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      align-items: end;
+      margin-bottom: 1.5rem;
+    }
 
+    h1 {
+      margin: 0 0 0.5rem;
+      font-size: clamp(2rem, 4vw, 3.25rem);
+      line-height: 0.95;
+    }
+
+    .subtitle {
+      margin: 0;
+      color: var(--muted);
+      max-width: 44rem;
+    }
+
+    .link-button,
+    .download-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      padding: 0.8rem 1.2rem;
+      font: inherit;
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    .link-button {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .link-button:hover,
+    .link-button:focus-visible {
+      background: var(--accent-dark);
+    }
+
+    .empty-state,
+    .gallery-card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      box-shadow: 0 18px 50px rgba(30, 31, 36, 0.08);
+    }
+
+    .empty-state {
+      padding: 2rem;
+    }
+
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+      gap: 1rem;
+    }
+
+    .gallery-card {
+      padding: 1rem;
+    }
+
+    .preview-frame {
+      background:
+        linear-gradient(135deg, rgba(217, 93, 57, 0.12), rgba(255, 255, 255, 0.18)),
+        #fff;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 0.85rem;
+      margin-bottom: 1rem;
+    }
+
+    .pixel-preview {
+      display: grid;
+      grid-template-columns: repeat(32, 1fr);
+      gap: 1px;
+      width: 100%;
+      aspect-ratio: 1;
+      padding: 1px;
+      background: #cabdaa;
+      border-radius: 12px;
+    }
+
+    .pixel-preview span {
+      display: block;
+      width: 100%;
+      aspect-ratio: 1;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      align-items: start;
+    }
+
+    .card-header h2 {
+      margin: 0;
+      font-size: 1.1rem;
+    }
+
+    .saved-at {
+      margin: 0.25rem 0 1rem;
+      color: var(--muted);
+    }
+
+    .download-button {
+      border: 1px solid var(--line);
+      background: #efe5d8;
+      color: var(--ink);
+    }
+
+    .download-button:hover,
+    .download-button:focus-visible {
+      background: #e7d8c4;
+    }
+
+    @media (max-width: 700px) {
       .topbar {
-        display: flex;
-        justify-content: space-between;
-        gap: 1rem;
-        align-items: end;
-        margin-bottom: 1.5rem;
-      }
-
-      h1 {
-        margin: 0 0 0.5rem;
-        font-size: clamp(2rem, 4vw, 3.25rem);
-        line-height: 0.95;
-      }
-
-      .subtitle {
-        margin: 0;
-        color: var(--muted);
-        max-width: 44rem;
-      }
-
-      .link-button,
-      .download-button {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 999px;
-        padding: 0.8rem 1.2rem;
-        font: inherit;
-        font-weight: 700;
-        text-decoration: none;
-      }
-
-      .link-button {
-        background: var(--accent);
-        color: #fff;
-      }
-
-      .link-button:hover,
-      .link-button:focus-visible {
-        background: var(--accent-dark);
-      }
-
-      .empty-state,
-      .gallery-card {
-        background: var(--panel);
-        border: 1px solid var(--line);
-        border-radius: 24px;
-        box-shadow: 0 18px 50px rgba(30, 31, 36, 0.08);
-      }
-
-      .empty-state {
-        padding: 2rem;
-      }
-
-      .gallery-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
-        gap: 1rem;
-      }
-
-      .gallery-card {
-        padding: 1rem;
-      }
-
-      .preview-frame {
-        background:
-          linear-gradient(135deg, rgba(217, 93, 57, 0.12), rgba(255, 255, 255, 0.18)),
-          #fff;
-        border: 1px solid var(--line);
-        border-radius: 18px;
-        padding: 0.85rem;
-        margin-bottom: 1rem;
-      }
-
-      .pixel-preview {
-        display: grid;
-        grid-template-columns: repeat(32, 1fr);
-        gap: 1px;
-        width: 100%;
-        aspect-ratio: 1;
-        padding: 1px;
-        background: #cabdaa;
-        border-radius: 12px;
-      }
-
-      .pixel-preview span {
-        display: block;
-        width: 100%;
-        aspect-ratio: 1;
-      }
-
-      .card-header {
-        display: flex;
-        justify-content: space-between;
-        gap: 1rem;
+        flex-direction: column;
         align-items: start;
       }
+    }
+  </style>
+{% endblock %}
 
-      .card-header h2 {
-        margin: 0;
-        font-size: 1.1rem;
-      }
+{% block content %}
+  <section class="topbar">
+    <div>
+      <h1>Saved Gallery</h1>
+      <p class="subtitle">Browse every saved 32x32 canvas, preview the pixel work, and download any piece as a PNG.</p>
+    </div>
+    <a class="link-button" href="{{ url_for('canvas.index') }}">Back to drawing board</a>
+  </section>
 
-      .saved-at {
-        margin: 0.25rem 0 1rem;
-        color: var(--muted);
-      }
+  {% if canvases %}
+    <section class="gallery-grid">
+      {% for canvas in canvases %}
+        <article class="gallery-card">
+          <div class="preview-frame">
+            <div class="pixel-preview" aria-label="Preview of {{ canvas.name }}">
+              {% for row in canvas.pixel_data %}
+                {% for color in row %}
+                  <span style="background-color: {{ color }};"></span>
+                {% endfor %}
+              {% endfor %}
+            </div>
+          </div>
 
-      .download-button {
-        border: 1px solid var(--line);
-        background: #efe5d8;
-        color: var(--ink);
-      }
-
-      .download-button:hover,
-      .download-button:focus-visible {
-        background: #e7d8c4;
-      }
-
-      @media (max-width: 700px) {
-        .topbar {
-          flex-direction: column;
-          align-items: start;
-        }
-      }
-    </style>
-  </head>
-  <body>
-    <main>
-      <section class="topbar">
-        <div>
-          <h1>Saved Gallery</h1>
-          <p class="subtitle">Browse every saved 32x32 canvas, preview the pixel work, and download any piece as a PNG.</p>
-        </div>
-        <a class="link-button" href="{{ url_for('canvas.index') }}">Back to drawing board</a>
-      </section>
-
-      {% if canvases %}
-        <section class="gallery-grid">
-          {% for canvas in canvases %}
-            <article class="gallery-card">
-              <div class="preview-frame">
-                <div class="pixel-preview" aria-label="Preview of {{ canvas.name }}">
-                  {% for row in canvas.pixel_data %}
-                    {% for color in row %}
-                      <span style="background-color: {{ color }};"></span>
-                    {% endfor %}
-                  {% endfor %}
-                </div>
-              </div>
-
-              <div class="card-header">
-                <div>
-                  <h2>{{ canvas.name }}</h2>
-                  <p class="saved-at">Saved {{ canvas.created_at.strftime('%b %d, %Y %I:%M %p') }}</p>
-                </div>
-                <a class="download-button" href="{{ url_for('canvas.download_canvas', canvas_id=canvas.id) }}">Download</a>
-              </div>
-            </article>
-          {% endfor %}
-        </section>
-      {% else %}
-        <section class="empty-state">
-          <h2>No saved canvases yet</h2>
-          <p>Your gallery is empty right now. Create a piece on the drawing board and save it to see it here.</p>
-          <a class="link-button" href="{{ url_for('canvas.index') }}">Create your first canvas</a>
-        </section>
-      {% endif %}
-    </main>
-  </body>
-</html>
+          <div class="card-header">
+            <div>
+              <h2>{{ canvas.name }}</h2>
+              <p class="saved-at">Saved {{ canvas.created_at.strftime('%b %d, %Y %I:%M %p') }}</p>
+            </div>
+            <a class="download-button" href="{{ url_for('canvas.download_canvas', canvas_id=canvas.id) }}">Download</a>
+          </div>
+        </article>
+      {% endfor %}
+    </section>
+  {% else %}
+    <section class="empty-state">
+      <h2>No saved canvases yet</h2>
+      <p>Your gallery is empty right now. Create a piece on the drawing board and save it to see it here.</p>
+      <a class="link-button" href="{{ url_for('canvas.index') }}">Create your first canvas</a>
+    </section>
+  {% endif %}
+{% endblock %}

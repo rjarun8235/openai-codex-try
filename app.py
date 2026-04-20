@@ -1,10 +1,13 @@
+import os
 from pathlib import Path
 
 from flask import Flask
 
 from models import db
+from routes.auth import auth_bp
 from routes.canvas import canvas_bp
 from routes.export import export_bp
+from services.auth_service import get_current_user, load_current_user
 
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -12,6 +15,7 @@ BASE_DIR = Path(__file__).resolve().parent
 
 def create_app(test_config=None):
     app = Flask(__name__)
+    app.config["SECRET_KEY"] = os.environ.get("PIXEL_ART_SECRET_KEY", "dev-secret-key")
     app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{BASE_DIR / 'pixel_art.db'}"
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
@@ -19,6 +23,20 @@ def create_app(test_config=None):
         app.config.update(test_config)
 
     db.init_app(app)
+
+    @app.before_request
+    def load_auth_state():
+        load_current_user()
+
+    @app.context_processor
+    def inject_auth_context():
+        current_user = get_current_user()
+        return {
+            "current_user": current_user,
+            "is_authenticated": current_user is not None,
+        }
+
+    app.register_blueprint(auth_bp)
     app.register_blueprint(canvas_bp)
     app.register_blueprint(export_bp)
 

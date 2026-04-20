@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Create Account | Pixel Art Canvas</title>
+    <style>
+      :root {
+        --bg: #f6f1e8;
+        --panel: #fffaf2;
+        --ink: #1e1f24;
+        --muted: #6c6f7a;
+        --accent: #d95d39;
+        --accent-dark: #9f3417;
+        --line: #d8cdbf;
+        --success-bg: #e7f6ea;
+        --success-text: #1d6b36;
+        --error-bg: #fdeaea;
+        --error-text: #a12626;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at top, rgba(242, 193, 78, 0.2), transparent 26%),
+          linear-gradient(180deg, #f9f4ec 0%, var(--bg) 100%);
+      }
+
+      main {
+        width: min(520px, calc(100% - 2rem));
+        margin: 0 auto;
+        padding: 2rem 0 3rem;
+      }
+
+      .topbar {
+        display: flex;
+        justify-content: space-between;
+        gap: 0.75rem;
+        align-items: center;
+        margin-bottom: 1.25rem;
+        flex-wrap: wrap;
+      }
+
+      .nav-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 999px;
+        padding: 0.8rem 1.2rem;
+        background: #efe5d8;
+        color: var(--ink);
+        text-decoration: none;
+        font-weight: 700;
+      }
+
+      .nav-link:hover,
+      .nav-link:focus-visible {
+        background: #e7d8c4;
+      }
+
+      .card,
+      .message-banner {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 24px;
+        box-shadow: 0 18px 50px rgba(30, 31, 36, 0.08);
+      }
+
+      .card {
+        padding: 1.4rem;
+      }
+
+      .message-banner {
+        margin-bottom: 1rem;
+        padding: 0.95rem 1.1rem;
+        font-weight: 700;
+      }
+
+      .message-banner.success {
+        background: var(--success-bg);
+        color: var(--success-text);
+      }
+
+      .message-banner.error {
+        background: var(--error-bg);
+        color: var(--error-text);
+      }
+
+      h1 {
+        margin: 0 0 0.5rem;
+        font-size: clamp(2rem, 4vw, 3rem);
+        line-height: 0.98;
+      }
+
+      p {
+        color: var(--muted);
+        line-height: 1.5;
+      }
+
+      form {
+        display: grid;
+        gap: 0.9rem;
+        margin-top: 1.25rem;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 0.4rem;
+        font-weight: 700;
+        color: var(--ink);
+      }
+
+      input {
+        width: 100%;
+        padding: 0.8rem 0.95rem;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        font: inherit;
+        background: #fff;
+      }
+
+      button {
+        border: 0;
+        border-radius: 999px;
+        padding: 0.8rem 1.2rem;
+        font: inherit;
+        font-weight: 700;
+        cursor: pointer;
+        background: var(--accent);
+        color: #fff;
+      }
+
+      button:hover,
+      button:focus-visible {
+        background: var(--accent-dark);
+      }
+    </style>
+  </head>
+  <body>
+    {% set message_text = request.args.get("message") %}
+    {% set error_text = request.args.get("error") %}
+
+    <main>
+      <div class="topbar">
+        <a class="nav-link" href="{{ url_for('canvas.index') }}">Drawing board</a>
+        <a class="nav-link" href="{{ url_for('canvas.gallery') }}">Gallery</a>
+      </div>
+
+      {% with flashes = get_flashed_messages(with_categories=true) %}
+        {% if flashes %}
+          {% for category, message in flashes %}
+            <section class="message-banner {{ category }}" aria-live="polite">{{ message }}</section>
+          {% endfor %}
+        {% elif message_text %}
+          <section class="message-banner success" aria-live="polite">{{ message_text }}</section>
+        {% elif error_text %}
+          <section class="message-banner error" aria-live="polite">{{ error_text }}</section>
+        {% endif %}
+      {% endwith %}
+
+      <section class="card">
+        <h1>Create account</h1>
+        <p>Set up a username, email, and password, then head back to the canvas already signed in.</p>
+
+        <form action="/auth/signup" method="post" data-auth-form data-redirect="{{ url_for('canvas.index') }}">
+          <div>
+            <label for="username">Username</label>
+            <input id="username" name="username" type="text" autocomplete="username" required>
+          </div>
+          <div>
+            <label for="email">Email</label>
+            <input id="email" name="email" type="email" autocomplete="email" required>
+          </div>
+          <div>
+            <label for="password">Password</label>
+            <input id="password" name="password" type="password" autocomplete="new-password" required>
+          </div>
+          <button type="submit">Create account</button>
+        </form>
+      </section>
+    </main>
+
+    <script>
+      function updateLocationMessage(targetUrl, message, isError) {
+        const url = new URL(targetUrl, window.location.origin);
+
+        if (message) {
+          url.searchParams.set(isError ? "error" : "message", message);
+          url.searchParams.delete(isError ? "message" : "error");
+        }
+
+        window.location.assign(url.toString());
+      }
+
+      async function submitAuthForm(form) {
+        const submitButton = form.querySelector('button[type="submit"]');
+
+        if (submitButton) {
+          submitButton.disabled = true;
+        }
+
+        try {
+          const response = await fetch(form.action, {
+            method: form.method || "POST",
+            body: new FormData(form),
+            headers: {
+              "Accept": "application/json",
+            },
+          });
+          const result = await response.json();
+
+          if (!response.ok) {
+            throw new Error(result.message || "Request failed.");
+          }
+
+          updateLocationMessage(form.dataset.redirect || "{{ url_for('canvas.index') }}", result.message || "Success.", false);
+        } catch (error) {
+          updateLocationMessage(window.location.pathname, error.message || "Request failed.", true);
+        } finally {
+          if (submitButton) {
+            submitButton.disabled = false;
+          }
+        }
+      }
+
+      document.querySelectorAll("[data-auth-form]").forEach((form) => {
+        form.addEventListener("submit", (event) => {
+          event.preventDefault();
+          submitAuthForm(form);
+        });
+      });
+    </script>
+  </body>
+</html>
