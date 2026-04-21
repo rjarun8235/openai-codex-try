@@ -1,0 +1,43 @@
+name: Codex release notes
+
+# Runs when you push a tag matching v* (e.g. v0.2.0).
+# You'll trigger it manually by: git tag v0.2.0 && git push --tags
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write        # needed to create a branch and push
+  pull-requests: write   # needed to open the PR
+
+jobs:
+  notes:
+    runs-on: ubuntu-latest
+    steps:
+      # Step A — check out the repo with full history so Codex can diff tags
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Step B — run Codex with a release-notes prompt
+      - name: Generate release notes
+        uses: openai/codex-action@v1
+        with:
+          prompt: |
+            You are generating release notes.
+            The newly-pushed tag is ${{ github.ref_name }}.
+            Find the previous tag (or the initial commit if this is the first).
+            Summarize what changed between the previous tag and ${{ github.ref_name }}.
+            Prepend a new entry to CHANGELOG.md at the top, under a heading like "## ${{ github.ref_name }} — YYYY-MM-DD".
+            Group changes into sections: Added / Changed / Fixed / Removed.
+            Only include user-visible changes — skip internal refactors or config tweaks.
+            After editing CHANGELOG.md, create a branch named release-notes/${{ github.ref_name }},
+            commit with message "docs: release notes for ${{ github.ref_name }}",
+            push the branch, and open a PR targeting main with title "Release notes for ${{ github.ref_name }}".
+          sandbox: workspace-write
+          approval: never
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
