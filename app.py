@@ -7,6 +7,7 @@ from models import db
 from routes.auth import auth_bp
 from routes.canvas import canvas_bp
 from routes.export import export_bp
+from routes.health import health_bp
 from services.auth_service import get_current_user, load_current_user
 
 
@@ -47,6 +48,7 @@ def create_app(test_config=None):
     app.register_blueprint(auth_bp)
     app.register_blueprint(canvas_bp)
     app.register_blueprint(export_bp)
+    app.register_blueprint(health_bp)
 
     with app.app_context():
         db.create_all()

@@ -1,0 +1,43 @@
+name: Codex PR review
+
+# Fires on PR open/update. Codex reviews the diff and leaves comments.
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout PR head
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Codex review
+        uses: openai/codex-action@v1
+        with:
+          openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+          sandbox: workspace-write
+          codex-args: --ask-for-approval never
+          prompt: |
+            Review PR #${{ github.event.pull_request.number }} against its base branch.
+
+            Focus areas (in order):
+            1. Correctness bugs, null/undefined handling, off-by-one errors.
+            2. Security — secret leaks, injection risks, insecure defaults.
+            3. Missing test coverage for new behavior.
+            4. Violations of this repo's AGENTS.md rules.
+
+            Post concrete review comments on the PR using:
+              gh pr review ${{ github.event.pull_request.number }} --comment --body "..."
+            One short paragraph per finding, file + line reference, severity (P1/P2/P3).
+            If the PR looks clean, post a single approval comment and exit.
+            Do not modify any files in the PR.
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
